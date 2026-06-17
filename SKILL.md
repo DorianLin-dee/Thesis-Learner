@@ -1,11 +1,11 @@
 ---
-name: "thesis_reader"
-description: "论文阅读与分析助手 - 生成全文总述、章节分析、Related Work研究脉络思维导图"
+name: "thesis_learner"
+description: "论文学习助手 - 深度分析学术论文，提取关键内容，生成结构化分析报告"
 ---
 
-# 论文分析与报告生成助手
+# Thesis Learner - 论文学习助手
 
-简洁可泛化的论文分析工具，从网页读取论文内容，生成专业的HTML分析报告。
+帮助您高效阅读和分析学术论文的智能工具，支持全文总述、章节分析、引用追踪和研究脉络梳理。
 
 ---
 
@@ -216,428 +216,292 @@ WebFetch 读取网页内容（优先）
 
 ## 🎨 HTML报告UI设计规范 ⭐⭐⭐⭐
 
-### 整体布局
-- **左侧导航栏**：默认隐藏，鼠标移到最左侧（50px内）时滑出显示
-- **底部导航栏**：默认隐藏，鼠标移到最底部（50px内）时滑出显示
-- **顶部标题卡片**：作为页面内容的一部分，随内容滚动，不固定在顶部
-- **浅蓝渐变背景**：`linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)`
+### 核心依赖（必须引入）
+每个 HTML 报告的 `<head>` 中必须包含：
 
-### 导航栏样式
-#### 左侧导航栏
-- **默认隐藏**：`transform: translateX(-100%)`
-- **鼠标在左侧50px内显示**：`transform: translateX(0)`
-- **鼠标移出隐藏**
-- **毛玻璃背景**：`rgba(255, 255, 255, 0.95)` + `backdrop-filter: blur(20px)`
-- **阴影**：`0 0 20px rgba(0,0,0,0.1)`
-- **过渡动画**：`transition: transform 0.3s ease`
-- **position**: fixed, top: 0, left: 0, bottom: 0, z-index: 1000
+```html
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+```
 
-#### 底部导航栏
-- **默认隐藏**：`transform: translateY(100%)`
-- **鼠标在底部50px内显示**：`transform: translateY(0)`
-- **鼠标移出隐藏**
-- **毛玻璃背景**：同上
-- **阴影**：`0 -4px 24px rgba(0,0,0,0.1)`
-- **position**: fixed, left: 0, right: 0, bottom: 0, z-index: 999
-- **⚠️ 重要**：不要使用 `body:hover .pagination` 这样的选择器，这会导致底部导航栏一直显示
+### Tailwind 自定义配置
+在 `<head>` 中添加 Tailwind 配置脚本：
 
-### 内容区样式
-- **背景**：透明 `transparent`
-- **顶部标题栏**：毛玻璃背景 + `backdrop-filter: blur(20px)`
-- **内容区背景**：透明，让渐变背景透出
+```html
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+                    sans: ['Noto Sans SC', 'system-ui', 'sans-serif'],
+                },
+                colors: {
+                    indigo: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81', },
+                    amber: { 50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e', 900: '#78350f', },
+                    teal: { 50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a', },
+                    sky: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', },
+                    rose: { 50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af', 400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337', },
+                },
+            }
+        }
+    }
+</script>
+```
 
-### JavaScript导航栏逻辑
+### 自定义 CSS 样式（必须添加到 `<style>` 标签）
+
+```css
+body { font-family: 'Noto Sans SC', system-ui, sans-serif; background: #fafaf9; color: #18181b; }
+h1, h2, h3, h4, h5, h6 { font-family: 'Cormorant Garamond', Georgia, serif; }
+.font-serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+.font-sans { font-family: 'Noto Sans SC', system-ui, sans-serif; }
+
+/* 卡片进场动画 */
+.fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease, box-shadow 0.3s ease; }
+.fade-up.show { opacity: 1; transform: translateY(0); }
+
+/* 顶部阅读进度条 */
+.scroll-bar { position: fixed; top: 0; left: 0; height: 3px; z-index: 9999; background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); }
+
+/* 右侧悬浮圆点导航 */
+.side-nav { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); z-index: 50; display: flex; flex-direction: column; gap: 12px; }
+.side-nav-item { width: 10px; height: 10px; border-radius: 50%; background: rgba(148, 163, 184, 0.4); cursor: pointer; transition: all 0.3s ease; position: relative; }
+.side-nav-item:hover { background: rgba(99, 102, 241, 0.6); transform: scale(1.3); }
+.side-nav-item.active { background: #6366f1; width: 24px; border-radius: 5px; }
+.side-nav-item span { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.95); padding: 6px 12px; border-radius: 8px; font-size: 12px; color: #334155; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.side-nav-item:hover span { opacity: 1; }
+
+/* 回到顶部按钮 */
+.to-top-btn { position: fixed; right: 24px; bottom: 24px; z-index: 50; width: 48px; height: 48px; border-radius: 50%; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+.to-top-btn.show { opacity: 1; visibility: visible; }
+.to-top-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,0.15); }
+
+/* 模块背景大数字 */
+.mod-bg-num { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(100px, 15vw, 180px); font-weight: 700; opacity: 0.04; position: absolute; top: -20px; right: -20px; line-height: 1; pointer-events: none; }
+
+/* 标签 Tag */
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; background: rgba(99, 102, 241, 0.1); color: #4f46e5; }
+
+/* 分割线 */
+.divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent); margin: 48px 0; }
+
+/* 背景装饰圆 */
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; }
+
+/* 讲座卡片 */
+.lecture-card { background: white; border: 1px solid #f4f4f5; border-radius: 16px; padding: 24px; transition: all 0.3s ease; }
+.lecture-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.15); }
+
+/* 自定义滚动条 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+```
+
+### 五大配色主题约定
+每个报告模块使用独立配色，约定如下：
+
+| 模块序号 | 主题色 | CSS类 | 使用场景 |
+|---------|--------|-------|---------|
+| 01 | indigo 紫蓝 | `text-indigo-600`, `bg-indigo-100` | 论文概览、封面 |
+| 02 | amber 琥珀 | `text-amber-500`, `bg-amber-100` | 引用论文、章节 |
+| 03 | teal 青绿 | `text-teal-500`, `bg-teal-100` | 研究脉络、方法论 |
+| 04 | sky 天蓝 | `text-sky-500`, `bg-sky-100` | 实验结果、数据 |
+| 05 | rose 玫瑰 | `text-rose-500`, `bg-rose-100` | 总结、展望 |
+
+### 字体层次约定
+- **大标题 Hero**：`text-4xl md:text-6xl lg:text-7xl font-bold font-serif`
+- **模块标题**：`text-3xl md:text-4xl font-bold font-serif`
+- **卡片标题**：`text-xl font-semibold text-zinc-900`
+- **正文**：`text-sm text-zinc-600 leading-relaxed`
+- **次要文字**：`text-zinc-500`
+
+### JavaScript 交互逻辑（添加到 `<script>` 标签底部）
+
 ```javascript
-// 获取导航栏元素
-const sidebar = document.querySelector('.sidebar');
-const pagination = document.querySelector('.pagination');
+// 阅读进度条 + 回到顶部按钮 + 导航高亮
+const scrollBar = document.getElementById('scrollBar');
+const toTopBtn = document.getElementById('toTopBtn');
+const sideNavItems = document.querySelectorAll('.side-nav-item');
+const sections = document.querySelectorAll('section');
 
-// 鼠标移动事件
-document.addEventListener('mousemove', function(e) {
-    // 左侧50px内显示侧边栏
-    if (e.clientX < 50) {
-        sidebar.classList.add('visible');
-    } else if (!sidebar.matches(':hover')) {
-        sidebar.classList.remove('visible');
-    }
+window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = (scrollTop / docHeight) * 100;
+    scrollBar.style.width = scrollPercent + '%';
 
-    // 底部50px内显示底部导航栏
-    if (e.clientY > window.innerHeight - 50) {
-        pagination.classList.add('visible');
-    } else if (!pagination.matches(':hover')) {
-        pagination.classList.remove('visible');
-    }
+    if (scrollTop > 500) toTopBtn.classList.add('show');
+    else toTopBtn.classList.remove('show');
+
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        const sectionHeight = section.offsetHeight;
+        if (scrollTop >= sectionTop && scrollTop < sectionTop + sectionHeight) {
+            sideNavItems.forEach(item => item.classList.remove('active'));
+            const activeItem = document.querySelector(`.side-nav-item[data-section="${section.id}"]`);
+            if (activeItem) activeItem.classList.add('active');
+        }
+    });
 });
 
-// 悬停在导航栏时保持显示
-if (sidebar) {
-    sidebar.addEventListener('mouseenter', () => sidebar.classList.add('visible'));
-    sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('visible'));
-}
+toTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-if (pagination) {
-    pagination.addEventListener('mouseenter', () => pagination.classList.add('visible'));
-    pagination.addEventListener('mouseleave', () => pagination.classList.remove('visible'));
-}
-```
+sideNavItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const sectionId = item.getAttribute('data-section');
+        const section = document.getElementById(sectionId);
+        if (section) section.scrollIntoView({ behavior: 'smooth' });
+    });
+});
 
-### 标题卡片样式
-作为内容的一部分，每个页面顶部都有一个标题卡片：
-- **圆角矩形**：16px圆角
-- **内边距**：24px
-- **居中对齐**：text-align: center
-- **阴影**：`0 4px 24px rgba(0,0,0,0.08)`
-- **悬停动画**：向上移动4px + 阴影增强
-- **字体层次**：
-  - 主标题(h2)：24px，字重700，颜色`#1D1D1F`
-  - 副标题(p)：13px，字重正常，颜色`#86868B`
-- **内容处理**：超出宽度时显示省略号
-
-### 统计卡片样式（概览页面信息卡片）
-用于展示论文核心研究主题，**大标题在上，小标签在下**：
-- **圆角**：16px
-- **内边距**：24px
-- **居中对齐**
-- **布局**：上方显示研究主题内容（蓝色大字），下方显示类别标签（灰色小字）
-- **大标题样式**（`.stat-number`）：
-  - 字号：20px
-  - 字重：700
-  - 颜色：`#007AFF`（主题蓝）
-  - 行高：1.3
-  - 允许换行显示
-- **小标签样式**（`.stat-label`）：
-  - 字号：13px
-  - 字重：600
-  - 颜色：`#86868B`
-  - 大写转换：`text-transform: uppercase`
-  - 字母间距：`letter-spacing: 0.5px`
-- **悬停动画**：向上移动4px + 阴影增强
-
-**示例结构**：
-```html
-<div class="stat-card">
-    <div class="stat-number">可编程负泊松比超材料</div>
-    <div class="stat-label">材料</div>
-</div>
-```
-
-### 通用卡片样式
-- **圆角**：16px
-- **内边距**：32px
-- **阴影**：`0 4px 24px rgba(0,0,0,0.08)`
-- **悬停阴影**：`0 8px 32px rgba(0,0,0,0.12)`
-- **过渡**：0.3秒 ease
-
-### 颜色变量
-```css
-:root {
-    --primary: #007AFF;        /* 主题蓝 */
-    --primary-dark: #0056CC;   /* 深蓝 */
-    --bg: #FFFFFF;             /* 白色 */
-    --bg-secondary: #F5F5F7;  /* 浅灰背景 */
-    --text: #1D1D1F;           /* 主文字 */
-    --text-secondary: #86868B; /* 次要文字 */
-    --border: #E5E5E7;         /* 边框 */
-    --card-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    --hover-shadow: 0 8px 32px rgba(0,0,0,0.12);
-}
-```
-
-### 内容溢出处理
-所有文本内容都要防止溢出：
-```css
-overflow: hidden;
-text-overflow: ellipsis;
-white-space: nowrap;
-```
-
-### 时间线样式
-```css
-.timeline {
-    position: relative;
-    padding-left: 40px;
-}
-
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, var(--primary), var(--bg-secondary));
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 24px;
-    padding: 20px;
-    background: var(--bg);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-}
-
-.timeline-item::before {
-    content: "";
-    position: absolute;
-    left: -31px;
-    top: 24px;
-    width: 12px;
-    height: 12px;
-    background: var(--primary);
-    border-radius: 50%;
-    border: 3px solid var(--bg);
-    box-shadow: 0 0 0 3px var(--primary);
-}
-
-.timeline-step {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 6px;
-}
-
-.timeline-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.timeline-desc {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-```
-
-### 页面切换动画
-```css
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+// 卡片进场动画
+const fadeCards = document.querySelectorAll('.fade-up');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('show');
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+fadeCards.forEach(card => observer.observe(card));
 ```
 
 ---
 
 ## 📄 全文总述 HTML 格式规范 ⭐⭐⭐
 
-### 页面结构
-全文总述是一个单页面 HTML，包含 4 个主要板块。在概览页面中，首先显示论文基本信息卡片，然后是其他内容。
+### 整体结构约定
+全文总述是一个单页滚动式 HTML，包含 Hero 封面 + 4 个主要模块。每个模块使用独立的主题色。
 
-### 论文基本信息卡片
-在概览页面的开始位置，必须包含论文基本信息卡片，包含以下信息：
-- 英文标题
-- 中文标题
-- 作者列表
-- 会议/期刊信息
-- 机构信息
+| 模块 | 内容 | 主题色 | Section ID |
+|------|------|--------|------------|
+| Hero | 封面、论文标题、标签、统计卡片 | indigo | `hero` |
+| 01 | 论文概览（基本信息、核心内容） | indigo | `overview` |
+| 02 | 章节结构（所有章节列表与简介） | amber | `structure` |
+| 03 | 工作流程（方法的核心步骤） | teal | `workflow` |
+| 04 | 影响与展望（贡献、价值、未来方向） | rose | `impact` |
 
-示例格式：
+### 右侧导航配置
 ```html
-<div class="card">
-    <div class="card-header">
-        <div class="card-icon">📄</div>
-        <div>
-            <div class="card-title">Rapid Deployment of Curved Surfaces via Programmable Auxetics</div>
-            <div class="card-subtitle">通过可编程负泊松比材料快速部署曲面</div>
+<div class="side-nav" id="sideNav">
+    <div class="side-nav-item active" data-section="hero"><span>封面</span></div>
+    <div class="side-nav-item" data-section="overview"><span>概览</span></div>
+    <div class="side-nav-item" data-section="structure"><span>章节</span></div>
+    <div class="side-nav-item" data-section="workflow"><span>流程</span></div>
+    <div class="side-nav-item" data-section="impact"><span>展望</span></div>
+</div>
+```
+
+### Hero 封面结构
+```html
+<section id="hero" class="relative min-h-[60vh] flex items-center justify-center py-20 overflow-hidden">
+    <div class="orb w-[400px] h-[400px] bg-indigo-500 top-[-100px] left-[-100px]"></div>
+    <div class="orb w-[300px] h-[300px] bg-purple-500 bottom-[-50px] right-[100px]"></div>
+    <div class="orb w-[250px] h-[250px] bg-rose-400 top-[100px] right-[-50px]"></div>
+
+    <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <div class="flex justify-center gap-3 mb-6 flex-wrap">
+            <span class="tag">论文分析</span>
+            <span class="tag bg-amber-100 text-amber-700">Research</span>
+            <span class="tag bg-teal-100 text-teal-700">Analysis</span>
+        </div>
+        <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold font-serif text-zinc-900 mb-6 leading-tight">
+            [论文标题]<span class="text-indigo-600 italic">分析</span>
+        </h1>
+        <p class="text-lg md:text-xl text-zinc-500 font-light max-w-2xl mx-auto mb-8">[作者 · 年份 · 来源]</p>
+        <div class="flex justify-center gap-6 flex-wrap">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+                <div class="text-3xl font-bold text-indigo-600 font-serif">[章节数]</div>
+                <div class="text-sm text-zinc-500">章节</div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+                <div class="text-3xl font-bold text-amber-500 font-serif">[引用数]</div>
+                <div class="text-sm text-zinc-500">引用</div>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+                <div class="text-3xl font-bold text-teal-500 font-serif">[贡献数]</div>
+                <div class="text-sm text-zinc-500">核心贡献</div>
+            </div>
         </div>
     </div>
-    <div style="font-size: 14px; color: var(--text-secondary); margin-top: 16px;">
-        <p style="margin-bottom: 12px;"><strong>作者：</strong>Jian Li, Hsueh-Cheng Wang, ...</p>
-        <p style="margin-bottom: 12px;"><strong>会议：</strong>SIGGRAPH 2020</p>
-        <p style="margin-bottom: 12px;"><strong>DOI：</strong><a href="https://doi.org/10.1145/3388769.3403368" target="_blank" style="color: var(--primary);">10.1145/3388769.3403368</a></p>
-        <p><strong>机构：</strong>卡内基梅隆大学，...</p>
-    </div>
-</div>
+</section>
 ```
 
-### 章节结构规范
-论文章节列表中，摘要（Abstract）必须是第一个章节，使用"0"作为编号标识，而不是数字"1"。后续章节编号从"1"开始。
-
-示例：
+### 模块通用结构
+每个模块的标准结构（以 01 概览为例，其他模块替换颜色即可）：
 ```html
-<div class="chapter-card">
-    <div class="chapter-number">0</div>
-    <div class="chapter-content">
-        <div class="chapter-title">ABSTRACT (摘要)</div>
-        <div class="chapter-desc">概述研究目标、方法和主要贡献。</div>
+<div class="divider"></div>
+
+<section id="overview" class="py-16 px-6 md:px-12 lg:px-24 max-w-6xl mx-auto">
+    <div class="relative mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold font-serif text-zinc-900 mb-4">
+            <span class="text-indigo-600">01</span> 论文概览
+        </h2>
+        <p class="text-zinc-500 max-w-xl">论文基本信息与核心内容</p>
+        <span class="mod-bg-num text-indigo-600">01</span>
     </div>
-</div>
-<div class="chapter-card">
-    <div class="chapter-number">1</div>
-    <div class="chapter-content">
-        <div class="chapter-title">INTRODUCTION (引言)</div>
-        <div class="chapter-desc">介绍研究背景和动机。</div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+        <div class="lecture-card fade-up">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                    <!-- icon -->
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-zinc-900 mb-2">[标题]</h3>
+                    <p class="text-zinc-600 text-sm leading-relaxed">[内容]</p>
+                </div>
+            </div>
+        </div>
+        <!-- 更多卡片 -->
     </div>
-</div>
+
+    <div class="mt-8 lecture-card fade-up">
+        <h3 class="text-xl font-semibold text-zinc-900 mb-4">[摘要/核心发现]</h3>
+        <p class="text-zinc-600 leading-relaxed">[内容]</p>
+    </div>
+</section>
 ```
 
+### 章节结构模块样式（带数字序号）
 ```html
-<div class="card">
-    <div class="card-header">
-        <div class="card-icon">📋</div>
-        <div>
-            <div class="card-title">一、论文概览</div>
-            <div class="card-subtitle">论文基本信息与核心内容</div>
+<div class="space-y-3">
+    <div class="flex items-start gap-4 bg-white rounded-2xl p-5 border border-zinc-100 fade-up">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-600 font-semibold text-sm">01</div>
+        <div class="flex-1">
+            <h4 class="text-lg font-semibold text-zinc-900 mb-1">Introduction（引言）</h4>
+            <p class="text-sm text-zinc-600 leading-relaxed">介绍研究背景和动机</p>
         </div>
     </div>
-    <!-- 内容 -->
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <div class="card-icon">📚</div>
-        <div>
-            <div class="card-title">二、章节结构</div>
-            <div class="card-subtitle">论文组织结构</div>
-        </div>
-    </div>
-    <!-- 内容 -->
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <div class="card-icon">🔄</div>
-        <div>
-            <div class="card-title">三、工作流程</div>
-            <div class="card-subtitle">方法的核心步骤</div>
-        </div>
-    </div>
-    <!-- 内容 -->
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <div class="card-icon">🚀</div>
-        <div>
-            <div class="card-title">四、影响与展望</div>
-            <div class="card-subtitle">研究价值与未来方向</div>
-        </div>
-    </div>
-    <!-- 内容 -->
+    <!-- 更多章节 -->
 </div>
 ```
 
-### 章节结构板块样式
-使用带数字序号的章节列表：
+### 工作流程模块样式（时间线风格）
 ```html
-<div class="chapter-item">
-    <div class="chapter-number">1</div>
-    <div class="chapter-content">
-        <h4>Introduction（引言）</h4>
-        <p>介绍研究背景和动机</p>
-    </div>
-</div>
-```
+<div class="relative pl-16">
+    <div class="absolute left-[22px] top-0 bottom-0 w-0.5 bg-teal-200"></div>
 
-### 工作流程板块样式
-使用时间线风格的流程展示：
-```html
-<div class="workflow-step">
-    <div class="workflow-left">
-        <div class="workflow-dot">1</div>
-        <div class="workflow-line"></div>
-    </div>
-    <div class="workflow-right">
-        <h4>问题定义</h4>
-        <p>明确研究问题</p>
-    </div>
-</div>
-```
-
-### 统计卡片完整 CSS 示例
-```css
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 32px;
-}
-
-.stat-card {
-    background: var(--bg);
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--hover-shadow);
-}
-
-.stat-number {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--primary);
-    line-height: 1.3;
-    margin-bottom: 8px;
-}
-
-.stat-label {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-```
-
-### 概览页面完整 HTML 示例
-```html
-<!-- 统计卡片区域 -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-number">可编程负泊松比超材料</div>
-        <div class="stat-label">材料</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">共形几何设计</div>
-        <div class="stat-label">方法</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">充气/重力驱动</div>
-        <div class="stat-label">驱动</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">医疗/建筑/航天</div>
-        <div class="stat-label">应用</div>
-    </div>
-</div>
-
-<!-- 研究目标卡片 -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-icon">🎯</div>
-        <div>
-            <div class="card-title">研究目标</div>
-            <div class="card-subtitle">开发可快速部署的双曲面可编程结构</div>
+    <div class="relative mb-8 fade-up">
+        <div class="absolute -left-[40px] w-11 h-11 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-white flex items-center justify-center font-bold shadow-lg shadow-teal-500/30">1</div>
+        <div class="bg-white rounded-2xl p-5 border border-zinc-100">
+            <h4 class="text-lg font-semibold text-zinc-900 mb-2">[步骤标题]</h4>
+            <p class="text-sm text-zinc-600 leading-relaxed">[步骤描述]</p>
         </div>
     </div>
-    <p style="font-size: 15px; line-height: 1.8; color: var(--text); margin-bottom: 16px;">
-        本论文的核心目标是...
-    </p>
-    <ul style="font-size: 14px; line-height: 1.8; color: var(--text-secondary); margin: 20px 0 20px 24px;">
-        <li style="margin-bottom: 10px;">关键要点1</li>
-        <li style="margin-bottom: 10px;">关键要点2</li>
-    </ul>
-</div>
-
-<!-- 研究范畴卡片 -->
-<div class="card">
-    <div class="card-header">
-        <div class="card-icon">🏷️</div>
-        <div class="card-title">研究范畴</div>
-    </div>
-    <div style="margin: 20px 0;">
-        <span class="tag">计算机图形学</span>
-        <span class="tag">计算制造</span>
-        <span class="tag">可展开结构</span>
-    </div>
+    <!-- 更多步骤 -->
 </div>
 ```
+
+### 各模块颜色替换规则
+| 模块 | 需替换的颜色类 | 示例 |
+|------|--------------|------|
+| 01 概览 | indigo | `text-indigo-600`, `bg-indigo-100` |
+| 02 章节 | amber | `text-amber-500`, `bg-amber-100` |
+| 03 流程 | teal | `text-teal-500`, `bg-teal-100` |
+| 04 展望 | rose | `text-rose-500`, `bg-rose-100` |
 
 ---
 
@@ -646,11 +510,9 @@ white-space: nowrap;
 ```
 📄 论文基本信息
 标题：[论文标题]
-中文标题：[论文中文标题]
 作者：[作者列表]
 发表年份：[年份]
 来源：[会议/期刊]
-机构：[机构信息]
 
 🎯 核心贡献
 1. [贡献1]
@@ -769,474 +631,308 @@ python3 .trae/skills/paper_finder/full_paper_analyzer.py "paper.pdf"
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>论文分析报告</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+                        sans: ['Noto Sans SC', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        indigo: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81', },
+                        amber: { 50: '#fffbeb', 100: '#fef3c7', 200: '#fde68a', 300: '#fcd34d', 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e', 900: '#78350f', },
+                        teal: { 50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a', },
+                        sky: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', },
+                        rose: { 50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af', 400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337', },
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        /* ===== 基础样式 ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #007AFF;
-            --primary-dark: #0056CC;
-            --bg: #FFFFFF;
-            --bg-secondary: #F5F5F7;
-            --text: #1D1D1F;
-            --text-secondary: #86868B;
-            --border: #E5E5E7;
-            --card-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            --hover-shadow: 0 8px 32px rgba(0,0,0,0.12);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-            color: var(--text);
-            line-height: 1.6;
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        /* ===== 左侧导航栏 ===== */
-        .sidebar {
-            width: 280px;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            z-index: 1000;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-
-        .sidebar.visible {
-            transform: translateX(0);
-        }
-
-        .sidebar-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .sidebar-header h1 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        .sidebar-header p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .nav-menu {
-            flex: 1;
-            padding: 16px 12px;
-            overflow-y: auto;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            margin: 4px 0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
-            color: var(--text);
-        }
-
-        .nav-item:hover {
-            background: var(--bg-secondary);
-        }
-
-        .nav-item.active {
-            background: var(--primary);
-            color: white;
-            font-weight: 500;
-        }
-
-        /* ===== 内容区 ===== */
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: transparent;
-            overflow: hidden;
-            margin-left: 0;
-        }
-
-        .content-body {
-            flex: 1;
-            padding: 32px 48px;
-            overflow-y: auto;
-            background: transparent;
-        }
-
-        /* ===== 标题卡片 ===== */
-        .title-card {
-            background: var(--bg);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .title-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--hover-shadow);
-        }
-
-        .title-card h2 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        .title-card p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        /* ===== 底部导航栏 ===== */
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px 48px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 999;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
-        }
-
-        .pagination.visible {
-            transform: translateY(0);
-        }
-
-        /* ===== 页面 ===== */
-        .page {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== 卡片 ===== */
-        .card {
-            background: var(--bg);
-            border-radius: 16px;
-            padding: 32px;
-            margin-bottom: 24px;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: var(--hover-shadow);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .card-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-right: 16px;
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        /* ===== 统计卡片 ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--bg);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--hover-shadow);
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 600;
-            color: var(--primary);
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        /* ===== 页面指示器 ===== */
-        .page-indicator {
-            display: flex;
-            gap: 8px;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--border);
-            transition: all 0.3s ease;
-        }
-
-        .dot.active {
-            background: var(--primary);
-            width: 24px;
-            border-radius: 4px;
-        }
-
-        .nav-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text);
-            transition: all 0.2s ease;
-        }
-
-        .nav-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .nav-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .nav-btn:disabled:hover {
-            background: var(--bg);
-            color: var(--text);
-            border-color: var(--border);
-        }
+        body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Cormorant Garamond', Georgia, serif; }
+        .font-serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+        .font-sans { font-family: 'Noto Sans SC', system-ui, sans-serif; }
+        
+        .fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease, box-shadow 0.3s ease; }
+        .fade-up.show { opacity: 1; transform: translateY(0); }
+        
+        .scroll-bar { position: fixed; top: 0; left: 0; height: 3px; z-index: 9999; background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); }
+        
+        .side-nav { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); z-index: 50; display: flex; flex-direction: column; gap: 12px; }
+        
+        .side-nav-item { width: 10px; height: 10px; border-radius: 50%; background: rgba(148, 163, 184, 0.4); cursor: pointer; transition: all 0.3s ease; position: relative; }
+        .side-nav-item:hover { background: rgba(99, 102, 241, 0.6); transform: scale(1.3); }
+        .side-nav-item.active { background: #6366f1; width: 24px; border-radius: 5px; }
+        
+        .side-nav-item span { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.95); padding: 6px 12px; border-radius: 8px; font-size: 12px; color: #334155; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .side-nav-item:hover span { opacity: 1; }
+        
+        .to-top-btn { position: fixed; right: 24px; bottom: 24px; z-index: 50; width: 48px; height: 48px; border-radius: 50%; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .to-top-btn.show { opacity: 1; visibility: visible; }
+        .to-top-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,0.15); }
+        
+        .mod-bg-num { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(100px, 15vw, 180px); font-weight: 700; opacity: 0.04; position: absolute; top: -20px; right: -20px; line-height: 1; pointer-events: none; }
+        
+        .tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; background: rgba(99, 102, 241, 0.1); color: #4f46e5; }
+        
+        .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent); margin: 48px 0; }
+        
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; }
+        
+        .lecture-card { background: white; border: 1px solid #f4f4f5; border-radius: 16px; padding: 24px; transition: all 0.3s ease; }
+        .lecture-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.15); }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body>
-    <div class="app">
-        <!-- ===== 左侧导航栏 ===== -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>📚 论文分析</h1>
-                <p>完整分析报告</p>
-            </div>
-            <div class="nav-menu">
-                <div class="nav-item active" data-page="overview">
-                    <span class="icon">🏠</span>
-                    <span>概览</span>
-                </div>
-                <div class="nav-item" data-page="papers">
-                    <span class="icon">📄</span>
-                    <span>引用论文</span>
-                </div>
-                <div class="nav-item" data-page="mindmap">
-                    <span class="icon">🧠</span>
-                    <span>思维导图</span>
-                </div>
-            </div>
-        </div>
+<body class="bg-stone-50 text-zinc-800 min-h-screen">
+    <div class="scroll-bar" id="scrollBar"></div>
+    
+    <div class="side-nav" id="sideNav">
+        <div class="side-nav-item active" data-section="hero"><span>封面</span></div>
+        <div class="side-nav-item" data-section="overview"><span>概览</span></div>
+        <div class="side-nav-item" data-section="papers"><span>引用论文</span></div>
+        <div class="side-nav-item" data-section="mindmap"><span>思维导图</span></div>
+    </div>
+    
+    <button class="to-top-btn" id="toTopBtn">
+        <i data-lucide="chevron-up" class="w-5 h-5 text-zinc-600"></i>
+    </button>
 
-        <!-- ===== 内容区 ===== -->
-        <div class="content">
-            <div class="content-body">
-                <!-- 页面1: 概览 -->
-                <div class="page active" id="page-overview">
-                    <div class="title-card">
-                        <h2>论文概览</h2>
-                        <p>目标论文基本信息</p>
+    <div class="relative">
+        <section id="hero" class="relative min-h-[60vh] flex items-center justify-center py-20 overflow-hidden">
+            <div class="orb w-[400px] h-[400px] bg-indigo-500 top-[-100px] left-[-100px]"></div>
+            <div class="orb w-[300px] h-[300px] bg-purple-500 bottom-[-50px] right-[100px]"></div>
+            <div class="orb w-[250px] h-[250px] bg-rose-400 top-[100px] right-[-50px]"></div>
+            
+            <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+                <div class="flex justify-center gap-3 mb-6 flex-wrap">
+                    <span class="tag">论文分析</span>
+                    <span class="tag bg-amber-100 text-amber-700">Research</span>
+                    <span class="tag bg-teal-100 text-teal-700">Analysis</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold font-serif text-zinc-900 mb-6 leading-tight">
+                    论文分析<span class="text-indigo-600 italic">报告</span>
+                </h1>
+                <p class="text-lg md:text-xl text-zinc-500 font-light max-w-2xl mx-auto mb-8">
+                    深入分析学术论文，提取引用脉络，构建研究思维导图
+                </p>
+                <div class="flex justify-center gap-6 flex-wrap">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+                        <div class="text-3xl font-bold text-indigo-600 font-serif">0</div>
+                        <div class="text-sm text-zinc-500">引用论文</div>
                     </div>
-                    <!-- 内容在这里 -->
-                </div>
-
-                <!-- 页面2: 引用论文 -->
-                <div class="page" id="page-papers">
-                    <div class="title-card">
-                        <h2>引用论文</h2>
-                        <p>引用论文完整列表</p>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+                        <div class="text-3xl font-bold text-amber-500 font-serif">0</div>
+                        <div class="text-sm text-zinc-500">研究主题</div>
                     </div>
-                    <!-- 内容在这里 -->
-                </div>
-
-                <!-- 页面3: 思维导图 -->
-                <div class="page" id="page-mindmap">
-                    <div class="title-card">
-                        <h2>思维导图</h2>
-                        <p>研究脉络梳理</p>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+                        <div class="text-3xl font-bold text-teal-500 font-serif">0</div>
+                        <div class="text-sm text-zinc-500">核心贡献</div>
                     </div>
-                    <!-- 内容在这里 -->
+                </div>
+                <div class="mt-12 animate-bounce">
+                    <i data-lucide="chevron-down" class="w-8 h-8 text-zinc-400 mx-auto"></i>
                 </div>
             </div>
+        </section>
 
-            <!-- ===== 底部导航栏 ===== -->
-            <div class="pagination">
-                <button class="nav-btn" id="prev-btn" disabled>← 上一页</button>
-                <div class="page-indicator">
-                    <div class="dot active" data-page="overview"></div>
-                    <div class="dot" data-page="papers"></div>
-                    <div class="dot" data-page="mindmap"></div>
-                </div>
-                <button class="nav-btn" id="next-btn">下一页 →</button>
+        <div class="divider"></div>
+
+        <section id="overview" class="py-16 px-6 md:px-12 lg:px-24 max-w-6xl mx-auto">
+            <div class="relative mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold font-serif text-zinc-900 mb-4">
+                    <span class="text-indigo-600">01</span> 论文概览
+                </h2>
+                <p class="text-zinc-500 max-w-xl">目标论文基本信息与核心内容</p>
+                <span class="mod-bg-num text-indigo-600">01</span>
             </div>
-        </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="lecture-card fade-up">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="file-text" class="w-5 h-5 text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-zinc-900 mb-2">论文标题</h3>
+                            <p class="text-zinc-600 text-sm leading-relaxed">[论文标题内容]</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lecture-card fade-up">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="users" class="w-5 h-5 text-amber-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-zinc-900 mb-2">作者信息</h3>
+                            <p class="text-zinc-600 text-sm leading-relaxed">[作者列表]</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lecture-card fade-up">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="calendar" class="w-5 h-5 text-teal-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-zinc-900 mb-2">发表信息</h3>
+                            <p class="text-zinc-600 text-sm leading-relaxed">[期刊/会议信息]</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lecture-card fade-up">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="link" class="w-5 h-5 text-sky-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-zinc-900 mb-2">文献链接</h3>
+                            <p class="text-zinc-600 text-sm leading-relaxed">[DOI / 链接]</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 lecture-card fade-up">
+                <h3 class="text-xl font-semibold text-zinc-900 mb-4">研究摘要</h3>
+                <p class="text-zinc-600 leading-relaxed">[摘要内容]</p>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section id="papers" class="py-16 px-6 md:px-12 lg:px-24 max-w-6xl mx-auto">
+            <div class="relative mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold font-serif text-zinc-900 mb-4">
+                    <span class="text-amber-500">02</span> 引用论文
+                </h2>
+                <p class="text-zinc-500 max-w-xl">引用论文完整列表与分类</p>
+                <span class="mod-bg-num text-amber-500">02</span>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="lecture-card fade-up">
+                    <div class="flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <span class="text-xs font-bold text-amber-600">01</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-zinc-900 mb-1">[论文标题]</h3>
+                            <p class="text-sm text-zinc-500 mb-2">[作者, Year]</p>
+                            <p class="text-sm text-zinc-600 leading-relaxed">[摘要片段]</p>
+                        </div>
+                        <a href="#" class="text-indigo-600 hover:text-indigo-700 flex-shrink-0">
+                            <i data-lucide="external-link" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section id="mindmap" class="py-16 px-6 md:px-12 lg:px-24 max-w-6xl mx-auto">
+            <div class="relative mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold font-serif text-zinc-900 mb-4">
+                    <span class="text-teal-500">03</span> 研究脉络
+                </h2>
+                <p class="text-zinc-500 max-w-xl">思维导图式研究演进</p>
+                <span class="mod-bg-num text-teal-500">03</span>
+            </div>
+            
+            <div class="lecture-card fade-up">
+                <div class="font-mono text-sm text-zinc-600 leading-relaxed whitespace-pre-wrap">
+研究脉络
+├─ 主题1
+│   ├─ Author [Year]
+│   └─ Author [Year]
+├─ 主题2
+│   ├─ Author [Year]
+│   └─ Author [Year]
+└─ 主题3
+    └─ Author [Year]
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <footer class="py-12 text-center text-zinc-400 text-sm">
+            <p>论文分析报告 · Generated by Paper Finder Skill</p>
+        </footer>
     </div>
 
     <script>
-        // ===== 页面配置 =====
-        const pages = ['overview', 'papers', 'mindmap'];
-        let currentPage = 0;
-
-        // ===== 页面切换函数 =====
-        function goToPage(index) {
-            if (index < 0 || index >= pages.length) return;
-
-            // 切换页面显示
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            const targetPage = document.getElementById(`page-${pages[index]}`);
-            if (targetPage) {
-                targetPage.classList.add('active');
+        lucide.createIcons();
+        
+        const scrollBar = document.getElementById('scrollBar');
+        const toTopBtn = document.getElementById('toTopBtn');
+        const sideNavItems = document.querySelectorAll('.side-nav-item');
+        const sections = document.querySelectorAll('section');
+        
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            scrollBar.style.width = scrollPercent + '%';
+            
+            if (scrollTop > 500) {
+                toTopBtn.classList.add('show');
+            } else {
+                toTopBtn.classList.remove('show');
             }
-
-            // 更新左侧导航栏选中状态
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            const activeNavItem = document.querySelector(`.nav-item[data-page="${pages[index]}"]`);
-            if (activeNavItem) {
-                activeNavItem.classList.add('active');
-            }
-
-            // 更新页面指示器
-            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
-            const activeDot = document.querySelector(`.dot[data-page="${pages[index]}"]`);
-            if (activeDot) {
-                activeDot.classList.add('active');
-            }
-
-            // 更新按钮状态
-            document.getElementById('prev-btn').disabled = index === 0;
-            document.getElementById('next-btn').disabled = index === pages.length - 1;
-
-            currentPage = index;
-        }
-
-        // ===== 事件监听 =====
-        document.getElementById('prev-btn').addEventListener('click', () => goToPage(currentPage - 1));
-        document.getElementById('next-btn').addEventListener('click', () => goToPage(currentPage + 1));
-
-        document.querySelectorAll('.nav-item').forEach(item => {
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                const sectionHeight = section.offsetHeight;
+                if (scrollTop >= sectionTop && scrollTop < sectionTop + sectionHeight) {
+                    sideNavItems.forEach(item => item.classList.remove('active'));
+                    const activeItem = document.querySelector(`.side-nav-item[data-section="${section.id}"]`);
+                    if (activeItem) activeItem.classList.add('active');
+                }
+            });
+        });
+        
+        toTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        sideNavItems.forEach(item => {
             item.addEventListener('click', () => {
-                const page = item.getAttribute('data-page');
-                goToPage(pages.indexOf(page));
+                const sectionId = item.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
             });
         });
-
-        document.querySelectorAll('.dot').forEach(dot => {
-            dot.addEventListener('click', () => {
-                const page = dot.getAttribute('data-page');
-                goToPage(pages.indexOf(page));
+        
+        const fadeCards = document.querySelectorAll('.fade-up');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
             });
-        });
-
-        // 键盘导航
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                goToPage(currentPage - 1);
-            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
-                goToPage(currentPage + 1);
-            }
-        });
-
-        // ===== 导航栏显示/隐藏逻辑 =====
-        const sidebar = document.querySelector('.sidebar');
-        const pagination = document.querySelector('.pagination');
-
-        document.addEventListener('mousemove', function(e) {
-            // 左侧50px内显示侧边栏
-            if (e.clientX < 50) {
-                sidebar.classList.add('visible');
-            } else if (!sidebar.matches(':hover')) {
-                sidebar.classList.remove('visible');
-            }
-
-            // 底部50px内显示底部导航栏
-            if (e.clientY > window.innerHeight - 50) {
-                pagination.classList.add('visible');
-            } else if (!pagination.matches(':hover')) {
-                pagination.classList.remove('visible');
-            }
-        });
-
-        // 悬停在导航栏时保持显示
-        if (sidebar) {
-            sidebar.addEventListener('mouseenter', () => sidebar.classList.add('visible'));
-            sidebar.addEventListener('mouseleave', () => sidebar.classList.remove('visible'));
-        }
-
-        if (pagination) {
-            pagination.addEventListener('mouseenter', () => pagination.classList.add('visible'));
-            pagination.addEventListener('mouseleave', () => pagination.classList.remove('visible'));
-        }
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        
+        fadeCards.forEach(card => observer.observe(card));
     </script>
 </body>
 </html>
@@ -1246,34 +942,33 @@ python3 .trae/skills/paper_finder/full_paper_analyzer.py "paper.pdf"
 
 ## 🚨 常见错误与避免方法 🚨
 
-### 1. 底部导航栏一直显示
-**错误原因**：使用了 `body:hover .pagination` 或类似选择器
-**避免方法**：只使用 `.pagination.visible` 类控制显示
+### 1. Tailwind CDN 未引入
+**错误原因**：忘记在 `<head>` 中引入 `https://cdn.tailwindcss.com`
+**避免方法**：每个 HTML 文件的 `<head>` 中必须包含 Tailwind CDN 脚本和自定义配置
 
-### 2. 左侧导航栏选中不变色
-**错误原因**：
-- 缺少 `.nav-item.active` 样式
-- JavaScript代码中没有正确添加/移除 `active` 类
-- 元素不存在但没有进行空值检查
-**避免方法**：
-- 确保有 `.nav-item.active` 样式定义
-- JavaScript中使用 `if (element) { ... }` 进行空值检查
+### 2. 字体未加载（显示系统默认字体）
+**错误原因**：缺少 Google Fonts 的 Cormorant Garamond 和 Noto Sans SC 引入
+**避免方法**：确保 `<head>` 中有 fonts.googleapis.com 和 fonts.gstatic.com 的 preconnect + link
 
-### 3. 页面标题更新失败
-**错误原因**：尝试更新不存在的ID
-**避免方法**：
-- 每个页面都有自己的标题卡片（`.title-card`）
-- 不需要动态更新标题，每个页面的标题都直接写在HTML中
+### 3. 模块颜色不一致
+**错误原因**：同一模块混用了不同主题色（如 02 章节模块中出现 indigo）
+**避免方法**：严格遵循配色约定表（01-indigo / 02-amber / 03-teal / 04-sky / 05-rose）
 
-### 4. 元素选择器找不到元素
-**错误原因**：ID或类名拼写错误，或元素不存在
-**避免方法**：
-- 使用 `querySelector` 后总是检查返回值是否为 `null`
-- 使用 `if (element) { ... }` 包裹操作代码
+### 4. 动画元素缺少 fade-up 类
+**错误原因**：卡片没有添加 `fade-up` 类，导致进场动画失效
+**避免方法**：所有 `.lecture-card` 和主要卡片都必须添加 `fade-up` 类
 
-### 5. 页面结构不一致
-**错误原因**：部分页面有标题卡片，部分页面没有
-**避免方法**：**所有页面**都必须有 `.title-card` 作为第一个元素
+### 5. Section ID 与导航 data-section 不匹配
+**错误原因**：`section id="xxx"` 与 `side-nav-item data-section="xxx"` 不一致
+**避免方法**：section ID 必须与对应导航项的 data-section 完全一致
+
+### 6. 阅读进度条不显示
+**错误原因**：缺少 `scroll-bar` 元素或缺少对应 CSS
+**避免方法**：`<body>` 后必须立即放置 `<div class="scroll-bar" id="scrollBar"></div>`
+
+### 7. 回到顶部按钮不工作
+**错误原因**：缺少 to-top-btn 元素或 JavaScript 脚本
+**避免方法**：确保有 `<button class="to-top-btn" id="toTopBtn">` + 对应的 scroll 事件监听
 
 ---
 
@@ -1281,43 +976,17 @@ python3 .trae/skills/paper_finder/full_paper_analyzer.py "paper.pdf"
 
 每次生成HTML报告后，必须检查以下项目：
 
-- [ ] 左侧导航栏：鼠标移到左侧50px内显示，移出隐藏
-- [ ] 左侧导航栏：点击某个项目后，该项目有蓝色背景高亮
-- [ ] 底部导航栏：鼠标移到底部50px内显示，移出隐藏
-- [ ] 底部导航栏：**不会**因为鼠标在页面其他位置就一直显示
-- [ ] 所有页面：都有 `.title-card` 作为第一个元素
-- [ ] 页面切换：左侧导航栏选中状态、页面指示器状态同步更新
-- [ ] 统计卡片：数字大小为32px，字重600
-- [ ] 页面切换：有淡入动画效果
-- [ ] 背景：浅蓝渐变 `linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)`
-- [ ] JavaScript：所有元素选择都有空值检查
-
----
-
-## 📁 完整HTML样本文件
-
-以下是两个完整的HTML样本文件路径，生成报告时应以此为参考：
-
-### 1. 全文总述样本
-文件路径：`/Users/dorian/Documents/solo/Paper/rapid_deployment_full_paper_overview.html`
-
-**特点**：
-- 4个页面：论文概览、章节结构、工作流程、影响与展望
-- 论文基本信息卡片（标题、作者、会议、DOI、机构）
-- 章节编号从"0"（摘要）开始
-- 统计卡片展示核心研究主题
-- 时间线展示工作流程
-- 应用前景板块使用emoji图标
-
-### 2. Related Work分析样本
-文件路径：`/Users/dorian/Documents/solo/Paper/related_work_complete.html`
-
-**特点**：
-- 6个页面：概览、引用论文、思维导图、方法对比、研究脉络、关键洞察
-- 统计卡片展示研究主题数量、引用论文数量等
-- 数据表格展示引用论文（论文名、年份、DOI/链接、简介）
-- 思维导图包含7大研究领域，每个领域下有"经验"和"问题"两个部分
-- 使用缩进和边框展示内容层级
-- 重点论文用橙色⭐标记
-- 时间线展示2010-2018年研究演进
-- 关键洞察板块总结研究趋势和技术演进
+- [ ] Tailwind CDN：已在 `<head>` 引入 `https://cdn.tailwindcss.com`
+- [ ] Tailwind 自定义配置：已添加 5 套主题色（indigo/amber/teal/sky/rose）
+- [ ] 字体：已引入 Cormorant Garamond 和 Noto Sans SC
+- [ ] 阅读进度条：`<div class="scroll-bar" id="scrollBar">` 存在，渐变色正确
+- [ ] 右侧导航：`.side-nav` 存在，每个 `.side-nav-item` 有正确的 `data-section`
+- [ ] 回到顶部按钮：`.to-top-btn` 存在，滚动 500px 后显示
+- [ ] Hero 封面：至少有 3 个 `.orb` 装饰圆，有 `tag` 标签，有统计卡片
+- [ ] 模块标题：每个 section 有 `.mod-bg-num` 大数字背景装饰
+- [ ] 卡片动画：所有主要卡片包含 `fade-up` 类
+- [ ] 分割线：每个 section 之间有 `<div class="divider"></div>`
+- [ ] Section ID：hero / overview / structure / workflow / impact 与导航项一一对应
+- [ ] 主题色一致性：01-indigo / 02-amber / 03-teal / 04-rose
+- [ ] JavaScript：已包含 scroll 监听、to-top 点击、fade-up IntersectionObserver 三段代码
+- [ ] body 样式：`bg-stone-50 text-zinc-800 min-h-screen`

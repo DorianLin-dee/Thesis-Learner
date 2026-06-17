@@ -2,7 +2,7 @@
 
 ## 1、Skill 简介
 
-这是一个帮助科研人员快速阅读论文、分析研究领域、寻找相关文献的 Skill。通过 AI 自动解析论文内容，生成结构化的 HTML 分析报告，同时支持根据研究方向搜索并推荐相关论文，每篇附上约 100 字的研究成果简述和免费阅读链接，适合需要频繁追踪学术前沿的研究者使用。
+这是一个帮助科研人员快速阅读论文、分析研究领域、寻找相关文献的 Skill。通过 AI 自动解析论文内容，生成 **Tailwind CSS 现代风格** 的结构化 HTML 分析报告，同时支持根据研究方向搜索并推荐相关论文，每篇附上约 100 字的研究成果简述和免费阅读链接，适合需要频繁追踪学术前沿的研究者使用。
 
 ---
 
@@ -69,7 +69,8 @@
 - **核心引擎**：`html_generator.py` — Python 脚本，统一封装了 9 种报告的生成逻辑
 - **数据结构**：使用 Python dataclass 定义结构化数据对象（PaperBasicInfo、SearchPaper、RelatedPaperItem 等），确保报告内容与样式解耦
 - **输出格式**：纯 HTML 文件，无需服务端，直接在浏览器打开即可
-- **UI 设计**：采用卡片式布局、彩色分类标签、侧边导航栏，支持多页面切换
+- **UI 设计**：采用 **Tailwind CSS 现代风格**（通过 CDN 引入），卡片式布局（`bg-white rounded-2xl border border-zinc-100`）、彩色分类标签、Hero 封面区（3 个模糊装饰圆 `.orb`）、右侧悬浮导航、顶部阅读进度条、回到顶部按钮、模块背景大序号装饰 `.mod-bg-num` 等交互元素；字体系统采用 **Cormorant Garamond**（衬线标题）+ **Noto Sans SC**（中文正文）；配色为 `bg-stone-50` 米色背景 + `text-zinc-800` 深灰文字；模块主题色采用 indigo / emerald / amber / sky / rose；支持多页面切换与 `.fade-up` 入场动画；最后一章节必用深色压轴大卡片（`bg-gradient-to-br from-zinc-900 to-zinc-800 text-white`）
+- **技能扩展**：新增 `paper_related_work` Skill（位于 `skills/paper_related_work/`），专用于分析论文 Related Work 章节，自动提取引用论文、搜索免费 DOI 链接、生成 Tailwind CSS 风格的研究脉络 HTML 报告
 
 ---
 
